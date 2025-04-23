@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 # Database Configuration
 db_config = {
-    'host': 'database-1.cytea2me860o.us-east-1.rds.amazonaws.com',
+    'host': 'arn:aws:dynamodb:us-east-1:340233612567:table/veera',
     'user': 'admin',
     'password': 'Cloud123',
     'database': 'dev'  # Change to your actual database name
