@@ -71,7 +71,7 @@ def handle_exception(e):
 
 def get_secret():
 
-    secret_name = "rds!db-ac74596e-50e0-4120-8858-461f7beef0fe"
+    secret_name = "rds!db-0437b423-1517-4d45-8c21-d86763de1afd"
     region_name = "us-east-1"
 
     session = boto3.session.Session()
@@ -100,7 +100,7 @@ secret_data = get_secret()
 #########################################################
 
 db_config = {
-    "host": "database-1.ckhkeogg21ln.us-east-1.rds.amazonaws.com",
+    "host": "database-1.ce5q60wqojxk.us-east-1.rds.amazonaws.com",
     "user": secret_data["username"],
     "password": secret_data["password"],
     "database": "dev"
