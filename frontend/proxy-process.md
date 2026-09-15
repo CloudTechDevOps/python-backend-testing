@@ -327,5 +327,25 @@ Frontend (Nginx)
                     ▼
                   Amazon RDS
 ```
-
+```
+Browser
+   |
+   | GET /users
+   v
+Nginx
+   |
+   | reads its nginx.conf
+   | sees location /users
+   | sees proxy_pass
+   v
+Backend :5000
+   |
+   | generates response
+   v
+Nginx
+   |
+   | sends RESPONSE
+   v
+Browser
+```
 **Key Point:** The browser never communicates directly with the private backend (`172.31.42.151:5000`). All API requests first go to the **Nginx server** on the frontend EC2, which securely proxies them to the backend Flask application.
