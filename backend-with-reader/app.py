@@ -12,7 +12,7 @@ CORS(app)
 
 # ✍️ Writer (Master)
 db_write_config = {
-    'host': 'database-1.cdwg0suic5ew.us-east-1.rds.amazonaws.com',
+    'host': 'database-1.ccfwoo0k0r5n.us-east-1.rds.amazonaws.com',
     'user': 'admin',
     'password': 'Cloud123',
     'database': 'dev'
@@ -20,7 +20,7 @@ db_write_config = {
 
 # 👀 Reader (Read Replica Endpoint)
 db_read_config = {
-    'host': 'reader.cdwg0suic5ew.us-east-1.rds.amazonaws.com',
+    'host': 'reader.ccfwoo0k0r5n.us-east-1.rds.amazonaws.com',
     'user': 'admin',
     'password': 'Cloud123',
     'database': 'dev'
