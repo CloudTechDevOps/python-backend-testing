@@ -1,0 +1,445 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 30px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d4ed8;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        input {
+            padding: 11px;
+            width: 100%;
+            margin: 8px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            margin: 5px 3px;
+        }
+
+        .add {
+            background: #16a34a;
+        }
+
+        .update {
+            background: #2563eb;
+        }
+
+        .delete {
+            background: #dc2626;
+        }
+
+        .refresh {
+            background: #475569;
+        }
+
+        .search {
+            background: #7c3aed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background: #1e40af;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        #message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .db-info {
+            background: #eff6ff;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        @media(max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 7px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>User Management System</h1>
+
+    <div id="message"></div>
+
+    <!-- ADD USER -->
+    <div class="card">
+        <h2>Add User</h2>
+
+        <input type="text" id="name" placeholder="Enter Name">
+        <input type="email" id="email" placeholder="Enter Email">
+
+        <button class="add" onclick="addUser()">Add User</button>
+    </div>
+
+    <!-- SEARCH USER -->
+    <div class="card">
+        <h2>Search User</h2>
+
+        <input type="number" id="searchId" placeholder="Enter User ID">
+
+        <button class="search" onclick="searchUser()">Search</button>
+        <button class="refresh" onclick="getUsers()">Show All Users</button>
+
+        <div id="searchResult"></div>
+    </div>
+
+    <!-- UPDATE USER -->
+    <div class="card">
+        <h2>Update User</h2>
+
+        <input type="number" id="updateId" placeholder="Enter User ID">
+        <input type="text" id="updateName" placeholder="Enter New Name">
+        <input type="email" id="updateEmail" placeholder="Enter New Email">
+
+        <button class="update" onclick="updateUser()">Update User</button>
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="card">
+        <h2>All Users</h2>
+
+        <button class="refresh" onclick="getUsers()">Refresh Users</button>
+
+        <div class="db-info" id="dbInfo">
+            Database information will appear here.
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="userTable">
+                <tr>
+                    <td colspan="4">Loading users...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+    // Flask backend URL
+    const API_URL = "http://34.227.61.12:5000";
+
+    // Display messages
+    function showMessage(message, type) {
+        const box = document.getElementById("message");
+
+        box.textContent = message;
+        box.className = type;
+        box.style.display = "block";
+
+        setTimeout(() => {
+            box.style.display = "none";
+        }, 4000);
+    }
+
+
+    // GET ALL USERS
+    async function getUsers() {
+
+        try {
+            const response = await fetch(`${API_URL}/users`);
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to fetch users");
+            }
+
+            const table = document.getElementById("userTable");
+
+            table.innerHTML = "";
+
+            if (result.data.length === 0) {
+                table.innerHTML =
+                    `<tr><td colspan="4">No users found</td></tr>`;
+            }
+
+            result.data.forEach(user => {
+
+                const row = document.createElement("tr");
+
+                [user.id, user.name, user.email].forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value ?? "";
+                    row.appendChild(cell);
+                });
+
+                const actionCell = document.createElement("td");
+
+                const editButton = document.createElement("button");
+                editButton.className = "update";
+                editButton.textContent = "Edit";
+
+                editButton.onclick = () => {
+                    document.getElementById("updateId").value = user.id;
+                    document.getElementById("updateName").value = user.name;
+                    document.getElementById("updateEmail").value = user.email;
+                };
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "delete";
+                deleteButton.textContent = "Delete";
+
+                deleteButton.onclick = () => deleteUser(user.id);
+
+                actionCell.append(editButton, deleteButton);
+                row.appendChild(actionCell);
+
+                table.appendChild(row);
+            });
+
+            document.getElementById("dbInfo").textContent =
+                `Served By: ${result.served_by} | ` +
+                `Read Only: ${result.read_only} | ` +
+                `Database Role: ${result.db_role}`;
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+
+    // ADD USER
+    async function addUser() {
+
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        if (!name || !email) {
+            showMessage("Please enter name and email", "error");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/users/add`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to add user");
+            }
+
+            showMessage(result.message, "success");
+
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+
+            getUsers();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+
+    // SEARCH USER BY ID
+    async function searchUser() {
+
+        const id = document.getElementById("searchId").value;
+
+        if (!id) {
+            showMessage("Enter User ID", "error");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/users/${id}`);
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "User not found");
+            }
+
+            const user = result.data;
+
+            document.getElementById("searchResult").textContent =
+                `ID: ${user.id} | Name: ${user.name} | Email: ${user.email}`;
+
+            showMessage("User found successfully", "success");
+
+        } catch (error) {
+            document.getElementById("searchResult").textContent = "";
+            showMessage(error.message, "error");
+        }
+    }
+
+
+    // UPDATE USER
+    async function updateUser() {
+
+        const id = document.getElementById("updateId").value;
+        const name = document.getElementById("updateName").value.trim();
+        const email = document.getElementById("updateEmail").value.trim();
+
+        if (!id || !name || !email) {
+            showMessage("Enter ID, name and email", "error");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/users/update/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to update user");
+            }
+
+            showMessage(result.message, "success");
+
+            document.getElementById("updateId").value = "";
+            document.getElementById("updateName").value = "";
+            document.getElementById("updateEmail").value = "";
+
+            getUsers();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+
+    // DELETE USER
+    async function deleteUser(id) {
+
+        if (!confirm("Are you sure you want to delete this user?")) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API_URL}/users/delete/${id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to delete user");
+            }
+
+            showMessage(result.message, "success");
+
+            getUsers();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+
+    // LOAD USERS WHEN PAGE OPENS
+    window.onload = getUsers;
+
+</script>
+
+</body>
+</html>
